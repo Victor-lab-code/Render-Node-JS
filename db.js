@@ -19,6 +19,6 @@ const pool = new Pool({
   ssl: {
     rejectUnauthorized: false, // Esto es necesario para las conexiones SSL en Render
   },
-});
+}) ;
 
 module.exports = pool;

@@ -1,4 +1,3 @@
-// usuarios.js
 const express = require('express');
 const pool = require('../db');
 const router = express.Router(); // Define el router una sola vez
@@ -6,35 +5,51 @@ const router = express.Router(); // Define el router una sola vez
 // Obtener todos los usuarios
 router.get('/', async (req, res) => {
   try {
+    console.log('Solicitud GET recibida en /usuarios');
     const result = await pool.query('SELECT * FROM usuarios');
+    console.log('Consulta SELECT ejecutada. Resultados:', result.rows);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).send(err.message);
+    console.error('Error al obtener los usuarios:', err.stack);
+    res.status(500).send('Error en el servidor');
   }
 });
 
 // Agregar un nuevo usuario
 router.post('/', async (req, res) => {
   const { nombre, correo, contrasena } = req.body;
+  console.log('Solicitud POST recibida en /usuarios con los datos:', { nombre, correo, contrasena });
+
   try {
     const result = await pool.query(
       'INSERT INTO usuarios (nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING *',
       [nombre, correo, contrasena]
     );
+    console.log('Consulta INSERT ejecutada. Usuario agregado:', result.rows[0]);
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    res.status(500).send(err.message);
+    console.error('Error al agregar usuario:', err.stack);
+    res.status(500).send('Error en el servidor');
   }
 });
 
 // Eliminar un usuario
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
+  console.log(`Solicitud DELETE recibida para eliminar el usuario con ID: ${id}`);
+
   try {
-    await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
-    res.status(200).send('Usuario eliminado');
+    const result = await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
+    if (result.rowCount > 0) {
+      console.log(`Usuario con ID ${id} eliminado correctamente`);
+      res.status(200).send('Usuario eliminado');
+    } else {
+      console.log(`No se encontró usuario con ID ${id}`);
+      res.status(404).send('Usuario no encontrado');
+    }
   } catch (err) {
-    res.status(500).send(err.message);
+    console.error('Error al eliminar usuario:', err.stack);
+    res.status(500).send('Error en el servidor');
   }
 });
 
