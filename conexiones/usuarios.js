@@ -84,8 +84,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Exporta el router
-module.exports = router;
+
 
 
 module.exports = router; // Exporta el router
