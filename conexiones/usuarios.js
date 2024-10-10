@@ -62,19 +62,22 @@ router.delete('/:id', async (req, res) => {
 router.post('/register', async (req, res) => {
   const { nombre, correo, contrasena } = req.body;
   try {
-    // Encriptar la contraseña antes de guardarla
+    // Verifica que los campos no estén vacíos
+    if (!nombre || !correo || !contrasena) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+
+    // Encriptar la contraseña
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
-    // Guardar usuario en la base de datos
+    // Insertar usuario en la base de datos
     const result = await pool.query(
       'INSERT INTO usuarios (nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING id',
       [nombre, correo, hashedPassword]
     );
 
-    // Crear un token JWT único para el usuario registrado
-    const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    // Crear token JWT
+    const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     // Enviar el token al cliente
     res.status(201).json({ token });
