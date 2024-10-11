@@ -24,6 +24,7 @@ const EtiquetasRoutes = require('./conexiones/etiquetas');
 const LogsRoutes = require('./conexiones/logs');
 const ComentariosRoutes = require('./conexiones/comentarios_documentos');
 const Permisos = require('./conexiones/permisos_tablas');
+const authRoutes = require('./conexiones/auth'); // Cambia aquí a auth.js o register.js
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -38,7 +39,8 @@ app.use('/etiquetas', EtiquetasRoutes);
 app.use('/logs', LogsRoutes);
 app.use('/comentarios_documentos', ComentariosRoutes);
 app.use('/permisos_tablas', Permisos);
-app.use('/register', usuariosRoutes)
+app.use(authRoutes); // Esta línea usará las rutas de auth.js, que incluye /register
+
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
