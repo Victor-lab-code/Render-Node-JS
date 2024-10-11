@@ -38,6 +38,7 @@ app.use('/etiquetas', EtiquetasRoutes);
 app.use('/logs', LogsRoutes);
 app.use('/comentarios_documentos', ComentariosRoutes);
 app.use('/permisos_tablas', Permisos);
+app.use('/register', usuariosRoutes)
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
