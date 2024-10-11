@@ -58,12 +58,12 @@ router.delete('/:id', async (req, res) => {
 
 //Registrar un usuario
 
-// Ruta para registrar usuarios
 router.post('/register', async (req, res) => {
   const { nombre, correo, contrasena } = req.body;
   try {
-    // Verifica que los campos no estén vacíos
+    // Validar datos de entrada
     if (!nombre || !correo || !contrasena) {
+      console.error('Error: Faltan campos en la solicitud');
       return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
@@ -76,16 +76,18 @@ router.post('/register', async (req, res) => {
       [nombre, correo, hashedPassword]
     );
 
+    console.log('Usuario registrado exitosamente:', result.rows[0].id);
+
     // Crear token JWT
     const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Enviar el token al cliente
     res.status(201).json({ token });
   } catch (err) {
     console.error('Error al registrar usuario:', err);
     res.status(500).json({ error: 'Error registrando usuario' });
   }
 });
+
 
 
 
