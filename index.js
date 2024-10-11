@@ -39,7 +39,7 @@ app.use('/etiquetas', EtiquetasRoutes);
 app.use('/logs', LogsRoutes);
 app.use('/comentarios_documentos', ComentariosRoutes);
 app.use('/permisos_tablas', Permisos);
-app.use(authRoutes); // Esta línea usará las rutas de auth.js, que incluye /register
+app.use('/', authRoutes); // Esta línea usará las rutas de auth.js, que incluye /register
 
 
 // Iniciar el servidor
