@@ -13,21 +13,38 @@ router.get('/', async (req, res) => {
 });
 
 // Agregar un nuevo documento
+// Ruta para agregar un documento
 router.post('/', async (req, res) => {
-  const { titulo, contenido_procesado } = req.body;
-  const usuario_id = req.user ? req.user.id : 1; // Aquí asumes que el ID de usuario está disponible en req.user
+  const { contenido_original, usuario_id, titulo, contenido_procesado } = req.body;
 
   try {
+    const buffer = Buffer.from(contenido_original, 'base64');  // Convertir de base64 a buffer
     const result = await pool.query(
-      'INSERT INTO documentos (titulo, contenido_procesado, usuario_id) VALUES ($1, $2, $3) RETURNING *',
-      [titulo, contenido_procesado, usuario_id]
+      'INSERT INTO documentos (contenido_original, usuario_id, titulo, contenido_procesado) VALUES ($1, $2, $3, $4) RETURNING *',
+      [buffer, usuario_id, titulo, contenido_procesado]
     );
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('Error al agregar documento:', err);
+    console.error('Error al guardar el documento:', err);
     res.status(500).send('Error en el servidor');
   }
 });
+// router.post('/', async (req, res) => {
+//   const { titulo, contenido_procesado } = req.body;
+//   const usuario_id = req.user ? req.user.id : 1; // Aquí asumes que el ID de usuario está disponible en req.user
+
+//   try {
+//     const result = await pool.query(
+//       'INSERT INTO documentos (titulo, contenido_procesado, usuario_id) VALUES ($1, $2, $3) RETURNING *',
+//       [titulo, contenido_procesado, usuario_id]
+//     );
+//     res.status(201).json(result.rows[0]);
+//   } catch (err) {
+//     console.error('Error al agregar documento:', err);
+//     res.status(500).send('Error en el servidor');
+//   }
+// });
 
 
 // Obtener todos los documentos
