@@ -18,10 +18,19 @@ router.post('/', async (req, res) => {
   const { contenido_original, usuario_id, titulo, contenido_procesado } = req.body;
 
   try {
-    const buffer = Buffer.from(contenido_original, 'base64');  // Convertir de base64 a buffer
+    // Convertir el contenido_original de base64 a buffer
+    const buffer = Buffer.from(contenido_original, 'base64');
+
+    // Asegurarse de que el usuario_id sea un número entero
+    const userIdParsed = parseInt(usuario_id);
+
+    if (isNaN(userIdParsed)) {
+      return res.status(400).json({ error: 'ID de usuario no válido' });
+    }
+
     const result = await pool.query(
       'INSERT INTO documentos (contenido_original, usuario_id, titulo, contenido_procesado) VALUES ($1, $2, $3, $4) RETURNING *',
-      [buffer, usuario_id, titulo, contenido_procesado]
+      [buffer, userIdParsed, titulo, contenido_procesado]
     );
 
     res.status(201).json(result.rows[0]);
@@ -30,6 +39,7 @@ router.post('/', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
+
 // router.post('/', async (req, res) => {
 //   const { titulo, contenido_procesado } = req.body;
 //   const usuario_id = req.user ? req.user.id : 1; // Aquí asumes que el ID de usuario está disponible en req.user
