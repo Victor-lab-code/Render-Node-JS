@@ -28,9 +28,13 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'ID de usuario no válido' });
     }
 
+    // Verificar los valores antes de ejecutar la consulta
+    console.log('Valores insertados:', { buffer, userIdParsed, titulo, contenido_procesado });
+
+    // Ejecutar la consulta
     const result = await pool.query(
       'INSERT INTO documentos (contenido_original, usuario_id, titulo, contenido_procesado) VALUES ($1, $2, $3, $4) RETURNING *',
-      [buffer, userIdParsed, titulo, contenido_procesado]
+      [buffer, userIdParsed, titulo || null, contenido_procesado || null]
     );
 
     res.status(201).json(result.rows[0]);
@@ -39,6 +43,7 @@ router.post('/', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
+
 
 // router.post('/', async (req, res) => {
 //   const { titulo, contenido_procesado } = req.body;
