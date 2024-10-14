@@ -6,8 +6,18 @@ const router = express.Router(); // Define el router
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM documentos');
-    res.json(result.rows);
+    
+    // Convertir contenido_original de buffer a base64
+    const documentos = result.rows.map((documento) => {
+      return {
+        ...documento,
+        contenido_original: documento.contenido_original.toString('base64'), // Convertir buffer a base64
+      };
+    });
+
+    res.json(documentos);
   } catch (err) {
+    console.error('Error al obtener los documentos:', err);
     res.status(500).send(err.message);
   }
 });
@@ -18,7 +28,16 @@ router.get('/usuario/:usuario_id', async (req, res) => {
   
   try {
     const result = await pool.query('SELECT * FROM documentos WHERE usuario_id = $1', [usuario_id]);
-    res.json(result.rows);
+    
+    // Convertir contenido_original de buffer a base64
+    const documentos = result.rows.map((documento) => {
+      return {
+        ...documento,
+        contenido_original: documento.contenido_original.toString('base64'), // Convertir buffer a base64
+      };
+    });
+
+    res.json(documentos);
   } catch (err) {
     console.error('Error al obtener los documentos del usuario:', err);
     res.status(500).send('Error en el servidor');
