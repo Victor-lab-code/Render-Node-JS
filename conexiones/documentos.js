@@ -75,9 +75,10 @@ router.post('/', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Error al guardar el documento:', err);
-    res.status(500).send('Error en el servidor');
+    res.status(500).json({ error: 'Error en el servidor', detalles: err.message });
   }
 });
+
 
 // Eliminar un documento
 router.delete('/:id', async (req, res) => {
