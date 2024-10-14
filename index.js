@@ -1,10 +1,16 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const bodyParser = require('body-parser');
 require('dotenv').config();
 
-// Agrega una ruta de prueba para verificar que el servidor esté funcionando
+// Configurar el límite de tamaño de las solicitudes
+app.use(express.json({ limit: '50mb' })); // 50MB como ejemplo
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Configurar CORS
+app.use(cors());
+
+// Rutas de prueba para verificar el funcionamiento del servidor
 app.get('/test', (req, res) => {
   res.send('Ruta de prueba funcionando correctamente');
 });
@@ -13,39 +19,32 @@ app.get('/hello', (req, res) => {
   res.send('Hola desde la ruta /hello');
 });
 
-
 // Rutas de tu aplicación
 const usuariosRoutes = require('./conexiones/usuarios');
-const RolesRoutes = require('./conexiones/roles');
-const DocumentosRoutes = require('./conexiones/documentos');
-const Routes = require('./conexiones/procesos_ocr');
-const ResumenesRoutes = require('./conexiones/resumenes');
-const EtiquetasRoutes = require('./conexiones/etiquetas');
-const LogsRoutes = require('./conexiones/logs');
-const ComentariosRoutes = require('./conexiones/comentarios_documentos');
-const Permisos = require('./conexiones/permisos_tablas');
-const authRoutes = require('./conexiones/auth'); // Cambia aquí a auth.js o register.js
+const rolesRoutes = require('./conexiones/roles');
+const documentosRoutes = require('./conexiones/documentos');
+const procesosOcrRoutes = require('./conexiones/procesos_ocr');
+const resumenesRoutes = require('./conexiones/resumenes');
+const etiquetasRoutes = require('./conexiones/etiquetas');
+const logsRoutes = require('./conexiones/logs');
+const comentariosRoutes = require('./conexiones/comentarios_documentos');
+const permisosRoutes = require('./conexiones/permisos_tablas');
+const authRoutes = require('./conexiones/auth'); // Cambia a auth.js o register.js si aplica
 
-app.use(cors());
-app.use(bodyParser.json());
-
-// Usar las rutas de tu API
+// Usar las rutas de la API
 app.use('/usuarios', usuariosRoutes);
-app.use('/roles', RolesRoutes);
-app.use('/documentos', DocumentosRoutes);
-app.use('/procesos_ocr', Routes);
-app.use('/resumenes', ResumenesRoutes);
-app.use('/etiquetas', EtiquetasRoutes);
-app.use('/logs', LogsRoutes);
-app.use('/comentarios_documentos', ComentariosRoutes);
-app.use('/permisos_tablas', Permisos);
-app.use('/', authRoutes); // Esta línea usará las rutas de auth.js, que incluye /register
-
+app.use('/roles', rolesRoutes);
+app.use('/documentos', documentosRoutes);
+app.use('/procesos_ocr', procesosOcrRoutes);
+app.use('/resumenes', resumenesRoutes);
+app.use('/etiquetas', etiquetasRoutes);
+app.use('/logs', logsRoutes);
+app.use('/comentarios_documentos', comentariosRoutes);
+app.use('/permisos_tablas', permisosRoutes);
+app.use('/', authRoutes); // Ruta para autenticación
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
-
-//cambios
