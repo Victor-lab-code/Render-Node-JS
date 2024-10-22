@@ -1,9 +1,10 @@
 const express = require('express');
 const pool = require('../db'); // Importa la conexión a la base de datos
+const verificarRol = require('../middlewares/verificarRol'); // Importar el middleware
 const router = express.Router(); // Define el router
 
-// Obtener todos los documentos
-router.get('/', async (req, res) => {
+// Obtener todos los documentos (permitido para 'admin', 'viewer' y 'manager')
+router.get('/', verificarRol(['admin', 'viewer', 'manager']), async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM documentos');
     
@@ -22,8 +23,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obtener documentos por usuario_id
-router.get('/usuario/:usuario_id', async (req, res) => {
+// Obtener documentos por usuario_id (permitido para 'admin', 'viewer' y 'manager')
+router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager']), async (req, res) => {
   const { usuario_id } = req.params;
   
   try {
@@ -44,8 +45,8 @@ router.get('/usuario/:usuario_id', async (req, res) => {
   }
 });
 
-// Agregar un nuevo documento
-router.post('/', async (req, res) => {
+// Agregar un nuevo documento (solo permitido para 'admin' y 'user')
+router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
   const { contenido_original, usuario_id, titulo, contenido_procesado } = req.body;
 
   try {
@@ -79,9 +80,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-// Eliminar un documento
-router.delete('/:id', async (req, res) => {
+// Eliminar un documento (permitido para 'admin' y 'manager')
+router.delete('/:id', verificarRol(['admin', 'manager']), async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM documentos WHERE id = $1', [id]);
@@ -91,8 +91,8 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Actualizar un documento
-router.put('/:id', async (req, res) => {
+// Actualizar un documento (permitido para 'admin' y 'user')
+router.put('/:id', verificarRol(['admin', 'user']), async (req, res) => {
   const { id } = req.params;
   const { titulo, contenido_procesado } = req.body;
   try {

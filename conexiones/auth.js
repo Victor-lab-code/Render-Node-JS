@@ -29,6 +29,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Ruta de inicio de sesión
+// Ruta de inicio de sesión
 router.post('/login', async (req, res) => {
   const { correo, contrasena } = req.body;
 
@@ -36,7 +37,12 @@ router.post('/login', async (req, res) => {
     console.log('Intentando iniciar sesión con correo:', correo);
 
     // Verificar si el correo existe en la base de datos
-    const result = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [correo]);
+    const result = await pool.query(`
+      SELECT usuarios.*, roles.nombre AS rol_nombre 
+      FROM usuarios 
+      LEFT JOIN roles ON usuarios.rol_id = roles.id 
+      WHERE usuarios.correo = $1
+    `, [correo]);
 
     if (result.rows.length === 0) {
       return res.status(400).json({ error: 'Usuario no encontrado' });
@@ -52,17 +58,22 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Contraseña incorrecta' });
     }
 
-    // Generar un token JWT
-    const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET || 'mi_secreto_super_seguro', { expiresIn: '1h' });
+    // Generar un token JWT que incluya el ID del usuario y el rol
+    const token = jwt.sign(
+      { id: usuario.id, rol: usuario.rol_nombre },
+      process.env.JWT_SECRET || 'mi_secreto_super_seguro',
+      { expiresIn: '1h' }
+    );
 
     console.log('Token generado:', token);
 
-    // Enviar el token y el userId al cliente
-    res.json({ token, userId: usuario.id });
+    // Enviar el token, el userId y el rol al cliente
+    res.json({ token, userId: usuario.id, rol: usuario.rol_nombre });
   } catch (err) {
     console.error('Error al iniciar sesión:', err);
     res.status(500).json({ error: 'Error en el servidor', detalles: err.message });
   }
 });
+
 
 module.exports = router;
