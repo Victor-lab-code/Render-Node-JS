@@ -9,9 +9,9 @@ function verificarRol(rolesPermitidos) {
       }
   
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        //const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        //const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mi_secreto_super_seguro');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mi_secreto_super_seguro');
         req.user = decoded; // Guardar la información del usuario en req.user
   
         if (!rolesPermitidos.includes(decoded.rol)) {
