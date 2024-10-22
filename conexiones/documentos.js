@@ -1,6 +1,6 @@
 const express = require('express');
 const pool = require('../db'); // Importa la conexión a la base de datos
-const verificarRol = require('/middlewares/verificarRol'); // Importar el middleware
+const verificarRol = require('./middlewares/verificarRol'); // Importar el middleware
 const router = express.Router(); // Define el router
 
 // Obtener todos los documentos (permitido para 'admin', 'viewer' y 'manager')
@@ -22,6 +22,7 @@ router.get('/', verificarRol(['admin', 'viewer', 'manager']), async (req, res) =
     res.status(500).send(err.message);
   }
 });
+//COMENTARIO X
 
 // Obtener documentos por usuario_id (permitido para 'admin', 'viewer' y 'manager')
 router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager']), async (req, res) => {
