@@ -48,6 +48,7 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager']),
 
 // Agregar un nuevo documento (solo permitido para 'admin' y 'user')
 // Agregar un nuevo documento (solo permitido para 'admin' y 'user')
+// Agregar un nuevo documento (solo permitido para 'admin' y 'user')
 router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
   const { contenido_original, usuario_id, titulo, contenido_procesado } = req.body;
 
@@ -92,6 +93,7 @@ router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
     res.status(500).json({ error: 'Error en el servidor al intentar guardar el documento.', detalles: err.message });
   }
 });
+
 
 
 // Eliminar un documento (permitido para 'admin' y 'manager')
