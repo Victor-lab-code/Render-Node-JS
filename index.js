@@ -43,6 +43,7 @@ app.use('/comentarios_documentos', comentariosRoutes);
 app.use('/permisos_tablas', permisosRoutes);
 app.use('/', authRoutes); // Ruta para autenticación
 
+
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -19,7 +19,7 @@ router.get('/', verificarRol(['admin', 'viewer', 'manager']), async (req, res) =
 });
 
 // Obtener documentos por usuario_id
-router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager']), async (req, res) => {
+router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
   const { usuario_id } = req.params;
   try {
     const result = await pool.query('SELECT * FROM documentos WHERE usuario_id = $1', [usuario_id]);
@@ -70,7 +70,7 @@ router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
 });
 
 // Eliminar un documento
-router.delete('/:id', verificarRol(['admin', 'manager']), async (req, res) => {
+router.delete('/:id', verificarRol(['admin', 'manager', 'user']), async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query('DELETE FROM documentos WHERE id = $1 RETURNING *', [id]);
