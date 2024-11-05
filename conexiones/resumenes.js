@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db'); // Importa la conexión a la base de datos
 const cohere = require('cohere-ai');
+const axios = require('axios');
 
 const router = express.Router(); // Define el router
 
