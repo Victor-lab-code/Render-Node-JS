@@ -1,10 +1,15 @@
 const express = require('express');
 const pool = require('../db'); // Importa la conexión a la base de datos
 const axios = require('axios');
+const cohere = require('cohere-ai');
+
 const router = express.Router(); // Define el router
 
+cohere.init(process.env.COHERE_API_KEY); // Inicializa cohere con tu API Key
+
+
 // Obtén la clave API de Cohere desde las variables de entorno
-const COHERE_API_KEY = process.env.COHERE_API_KEY;
+
 
 // Función para obtener un resumen utilizando Cohere
 async function obtenerResumen(texto) {
