@@ -1,37 +1,25 @@
 const express = require('express');
 const pool = require('../db'); // Importa la conexión a la base de datos
-const axios = require('axios');
-const cohere = require('cohere-ai');
-
+const cohere = require('cohere-ai'); // Importa Cohere
 const router = express.Router(); // Define el router
 
-cohere.init(process.env.COHERE_API_KEY); // Inicializa cohere con tu API Key
+// Inicializa Cohere con tu API Key obtenida de las variables de entorno
+cohere.init(process.env.COHERE_API_KEY); 
 
-
-// Obtén la clave API de Cohere desde las variables de entorno
-
-
-// Función para obtener un resumen utilizando Cohere
+// Función para obtener un resumen utilizando Cohere en español
 async function obtenerResumen(texto) {
   try {
-    const response = await axios.post(
-      'https://api.cohere.ai/v1/summarize',
-      {
-        text: texto,
-        length: "medium" // Cambia a "short", "medium" o "long" según lo que necesites
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${COHERE_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const cohereResponse = await cohere.generate({
+      model: 'xlarge',
+      prompt: `Por favor, proporciona un resumen breve en español del siguiente texto: ${texto}`,
+      max_tokens: 150,
+      temperature: 0.5,
+    });
 
     // Retorna el resumen generado
-    return response.data.summary;
+    return cohereResponse.body.generations[0].text.trim();
   } catch (error) {
-    console.error('Error al obtener el resumen:', error);
+    console.error('Error al obtener el resumen con Cohere:', error);
     throw new Error('No se pudo generar el resumen');
   }
 }
@@ -65,14 +53,7 @@ router.post('/generar', async (req, res) => {
     const textoOCR = ocrResult.rows[0].resultado_ocr;
 
     // Solicitar el resumen a Cohere
-    const cohereResponse = await cohere.generate({
-      model: 'xlarge',
-      prompt: `Por favor, proporciona un resumen breve en español del siguiente texto: ${textoOCR}`,
-      max_tokens: 150,
-      temperature: 0.5,
-    });
-
-    const resumen = cohereResponse.body.generations[0].text.trim();
+    const resumen = await obtenerResumen(textoOCR);
 
     // Guardar el resumen en la base de datos
     const result = await pool.query(
@@ -94,7 +75,6 @@ router.post('/generar', async (req, res) => {
 router.post('/', async (req, res) => {
   const { documento_id, resumen } = req.body;
 
-  // Log para verificar los datos recibidos
   console.log('Datos recibidos:', { documento_id, resumen });
 
   try {
