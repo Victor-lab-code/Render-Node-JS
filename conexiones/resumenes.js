@@ -5,7 +5,8 @@ const cohere = require('cohere-ai');
 const router = express.Router(); // Define el router
 
 // Configura la clave API de Cohere desde las variables de entorno
-cohere.init(process.env.COHERE_API_KEY);
+const COHERE_API_KEY = process.env.COHERE_API_KEY;
+cohere.apiKey = COHERE_API_KEY;
 
 // Función para obtener un resumen utilizando Cohere en español
 async function obtenerResumen(texto) {
