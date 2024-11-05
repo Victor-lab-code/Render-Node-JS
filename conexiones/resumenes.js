@@ -42,12 +42,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Ruta para generar un resumen de un documento y almacenarlo en la base de datos
+// Ruta para generar el resumen en español
 router.post('/generar', async (req, res) => {
   const { documento_id } = req.body;
 
   try {
-    // Paso 1: Obtener el texto OCR desde la base de datos
+    // Obtener el texto OCR almacenado en la base de datos
     const ocrResult = await pool.query(
       'SELECT resultado_ocr FROM procesos_ocr WHERE documento_id = $1',
       [documento_id]
@@ -59,20 +59,29 @@ router.post('/generar', async (req, res) => {
 
     const textoOCR = ocrResult.rows[0].resultado_ocr;
 
-    // Paso 2: Generar el resumen usando la función obtenerResumen
-    const resumenGenerado = await obtenerResumen(textoOCR);
+    // Solicitar el resumen a Cohere
+    const cohereResponse = await cohere.generate({
+      model: 'xlarge',
+      prompt: `Por favor, proporciona un resumen breve en español del siguiente texto: ${textoOCR}`,
+      max_tokens: 150,
+      temperature: 0.5,
+    });
 
-    // Paso 3: Guardar el resumen en la base de datos
+    const resumen = cohereResponse.body.generations[0].text.trim();
+
+    // Guardar el resumen en la base de datos
     const result = await pool.query(
       'INSERT INTO resumenes (documento_id, resumen, fecha_resumen) VALUES ($1, $2, NOW()) RETURNING *',
-      [documento_id, resumenGenerado]
+      [documento_id, resumen]
     );
 
-    console.log('Resumen agregado:', result.rows[0]);
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error al generar el resumen:', error);
-    res.status(500).json({ error: 'Error al generar el resumen' });
+    res.status(500).json({
+      error: 'Error al generar el resumen',
+      detalles: error.message,
+    });
   }
 });
 
