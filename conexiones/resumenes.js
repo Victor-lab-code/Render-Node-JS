@@ -6,21 +6,29 @@ const router = express.Router(); // Define el router
 
 // Configura la clave API de Cohere desde las variables de entorno
 const COHERE_API_KEY = process.env.COHERE_API_KEY;
-cohere.apiKey = COHERE_API_KEY;
 
 // Función para obtener un resumen utilizando Cohere en español
+// Función para obtener un resumen en español utilizando Cohere
 async function obtenerResumen(texto) {
   try {
-    const response = await cohere.summarize({
-      text: texto,
-      length: "medium", // Ajusta el tamaño del resumen: "short", "medium" o "long"
-      language: "es" // Especifica el idioma español
-    });
+    const response = await axios.post(
+      'https://api.cohere.ai/v1/summarize',
+      {
+        text: `Resumen en español del siguiente texto: ${texto}`,
+        length: "medium" // Cambia a "short", "medium" o "long" según lo que necesites
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${COHERE_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
     // Retorna el resumen generado
-    return response.body.summary;
+    return response.data.summary;
   } catch (error) {
-    console.error('Error al obtener el resumen con Cohere:', error);
+    console.error('Error al obtener el resumen:', error);
     throw new Error('No se pudo generar el resumen');
   }
 }
