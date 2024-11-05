@@ -22,7 +22,7 @@
 // }) ;
 
 // module.exports = pool;
-
+// COMENTARIO NUEBO
 
 const { Pool } = require('pg');
 require('dotenv').config();
