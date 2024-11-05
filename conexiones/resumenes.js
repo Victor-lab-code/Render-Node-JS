@@ -1,24 +1,23 @@
 const express = require('express');
 const pool = require('../db'); // Importa la conexión a la base de datos
-const cohere = require('cohere-ai'); // Importa Cohere
+const cohere = require('cohere-ai');
+
 const router = express.Router(); // Define el router
 
 // Configura la clave API de Cohere desde las variables de entorno
-const COHERE_API_KEY = process.env.COHERE_API_KEY;
-cohere.apiKey = COHERE_API_KEY;
+cohere.init(process.env.COHERE_API_KEY);
 
 // Función para obtener un resumen utilizando Cohere en español
 async function obtenerResumen(texto) {
   try {
-    const cohereResponse = await cohere.generate({
-      model: 'xlarge',
-      prompt: `Por favor, proporciona un resumen breve en español del siguiente texto: ${texto}`,
-      max_tokens: 150,
-      temperature: 0.5,
+    const response = await cohere.summarize({
+      text: texto,
+      length: "medium", // Ajusta el tamaño del resumen: "short", "medium" o "long"
+      language: "es" // Especifica el idioma español
     });
 
     // Retorna el resumen generado
-    return cohereResponse.body.generations[0].text.trim();
+    return response.body.summary;
   } catch (error) {
     console.error('Error al obtener el resumen con Cohere:', error);
     throw new Error('No se pudo generar el resumen');
