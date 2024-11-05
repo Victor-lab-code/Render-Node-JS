@@ -65,5 +65,27 @@ router.get('/:documentoId', async (req, res) => {
   }
 });
 
+router.get('/ver/:documento_id', async (req, res) => {
+  const { documento_id } = req.params;
+
+  try {
+    // Consulta para obtener el resultado OCR del documento específico
+    const result = await pool.query(
+      'SELECT resultado_ocr FROM procesos_ocr WHERE documento_id = $1',
+      [documento_id]
+    );
+
+    if (result.rowCount === 0) {
+      // Si no se encuentra el OCR, responder con un error 404
+      return res.status(404).json({ error: 'No se encontró un resultado OCR para este documento' });
+    }
+
+    // Enviar el texto OCR encontrado
+    res.status(200).json({ resultado_ocr: result.rows[0].resultado_ocr });
+  } catch (error) {
+    console.error('Error al obtener el resultado OCR:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
 
 module.exports = router;
