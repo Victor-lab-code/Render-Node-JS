@@ -55,6 +55,45 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Actualizar una etiqueta existente
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { documento_id, etiqueta, color } = req.body;
+
+  // Log para verificar los datos recibidos en el servidor
+  console.log('Datos para actualizar:', { documento_id, etiqueta, color });
+
+  try {
+    // Verificar que al menos `etiqueta` o `color` estén presentes para actualizar
+    if (!etiqueta && !color) {
+      console.error('Se requiere al menos un campo para actualizar (etiqueta o color)');
+      return res.status(400).send('Se requiere al menos un campo para actualizar (etiqueta o color)');
+    }
+
+    // Crear la consulta SQL para actualizar con condicional en `documento_id`
+    const queryText = documento_id
+      ? 'UPDATE etiquetas SET documento_id = $1, etiqueta = $2, color = $3 WHERE id = $4 RETURNING *'
+      : 'UPDATE etiquetas SET etiqueta = $1, color = $2 WHERE id = $3 RETURNING *';
+
+    // Establecer los valores de los parámetros según si `documento_id` está presente o no
+    const values = documento_id
+      ? [documento_id, etiqueta, color, id]
+      : [etiqueta, color, id];
+
+    // Ejecutar la consulta de actualización
+    const result = await pool.query(queryText, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send('Etiqueta no encontrada');
+    }
+
+    console.log('Etiqueta actualizada:', result.rows[0]);
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al actualizar etiqueta:', err.message);
+    res.status(500).send('Error en el servidor');
+  }
+});
 
 // Eliminar una etiqueta
 router.delete('/:id', async (req, res) => {
@@ -68,5 +107,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
+
+module.exports = router; // Exporta el router
 
 module.exports = router; // Exporta el router
