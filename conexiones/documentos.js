@@ -57,7 +57,7 @@ router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
     
     // Agregar documento con fecha asignada automáticamente
     const result = await pool.query(
-      'INSERT INTO documentos (contenido_original, usuario_id, titulo, contenido_procesado, fecha) VALUES ($1, $2, $3, $4, NOW()) RETURNING *',
+      'INSERT INTO documentos (contenido_original, usuario_id, titulo, contenido_procesado, fecha_subida) VALUES ($1, $2, $3, $4, NOW()) RETURNING *',
       [buffer, userIdParsed, titulo || null, contenido_procesado || null]
     );
 
