@@ -23,28 +23,38 @@ router.get('/', async (req, res) => {
 // Agregar una nueva etiqueta
 router.post('/', async (req, res) => {
   const { documento_id, etiqueta, color, usuario_id } = req.body;
-  
-  // Log para verificar los datos recibidos
+
+  // Log para verificar los datos recibidos en el servidor
   console.log('Datos recibidos:', { documento_id, etiqueta, color, usuario_id });
-  
+
   try {
-    // Validar que todos los datos requeridos estén presentes
-    if (!documento_id || !etiqueta || !color || !usuario_id) {
-      return res.status(400).send('documento_id, etiqueta, color y usuario_id son requeridos');
+    // Verificar que todos los datos requeridos estén presentes, excepto documento_id que ahora es opcional
+    if (!etiqueta || !color || !usuario_id) {
+      console.error('Faltan datos requeridos:', { etiqueta, color, usuario_id });
+      return res.status(400).send('etiqueta, color y usuario_id son requeridos');
     }
 
-    // Insertar la nueva etiqueta en la base de datos
-    const result = await pool.query(
-      'INSERT INTO etiquetas (documento_id, etiqueta, color, fecha_etiqueta, usuario_id) VALUES ($1, $2, $3, NOW(), $4) RETURNING *',
-      [documento_id, etiqueta, color, usuario_id]
-    );
+    // Crear la consulta SQL e insertar la etiqueta en la base de datos
+    const queryText = documento_id
+      ? 'INSERT INTO etiquetas (documento_id, etiqueta, color, fecha_etiqueta, usuario_id) VALUES ($1, $2, $3, NOW(), $4) RETURNING *'
+      : 'INSERT INTO etiquetas (etiqueta, color, fecha_etiqueta, usuario_id) VALUES ($1, $2, NOW(), $3) RETURNING *';
 
+    // Establecer los valores de los parámetros según si `documento_id` está presente o no
+    const values = documento_id
+      ? [documento_id, etiqueta, color, usuario_id]
+      : [etiqueta, color, usuario_id];
+
+    // Ejecutar la consulta en la base de datos
+    const result = await pool.query(queryText, values);
+
+    console.log('Etiqueta creada:', result.rows[0]);
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('Error al agregar etiqueta:', err);
+    console.error('Error al agregar etiqueta:', err.message);
     res.status(500).send('Error en el servidor');
   }
 });
+
 
 // Eliminar una etiqueta
 router.delete('/:id', async (req, res) => {
