@@ -37,6 +37,7 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', '
 // Agregar un nuevo documento
 router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
   const { contenido_original, usuario_id, titulo, contenido_procesado } = req.body;
+  
   try {
     const userIdParsed = parseInt(usuario_id);
     if (isNaN(userIdParsed)) {
@@ -53,8 +54,10 @@ router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
     }
 
     const buffer = Buffer.from(contenido_original, 'base64');
+    
+    // Agregar documento con fecha asignada automáticamente
     const result = await pool.query(
-      'INSERT INTO documentos (contenido_original, usuario_id, titulo, contenido_procesado) VALUES ($1, $2, $3, $4) RETURNING *',
+      'INSERT INTO documentos (contenido_original, usuario_id, titulo, contenido_procesado, fecha) VALUES ($1, $2, $3, $4, NOW()) RETURNING *',
       [buffer, userIdParsed, titulo || null, contenido_procesado || null]
     );
 
@@ -68,6 +71,7 @@ router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
     res.status(500).json({ error: 'Error en el servidor al intentar guardar el documento.', detalles: err.message });
   }
 });
+
 
 // Eliminar un documento
 router.delete('/:id', verificarRol(['admin', 'manager', 'user']), async (req, res) => {
