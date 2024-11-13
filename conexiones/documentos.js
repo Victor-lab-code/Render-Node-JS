@@ -56,22 +56,6 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', '
   }
 });
 
-
-
-    // Agregar la etiqueta correspondiente a cada documento (si existe)
-    const documentosConEtiquetas = documentos.map((documento) => ({
-      ...documento,
-      contenido_original: documento.contenido_original.toString('base64'),
-      etiqueta: etiquetasMap[documento.id] || null, // Agrega la etiqueta o null si no existe
-    }));
-
-    res.json(documentosConEtiquetas);
-  } catch (err) {
-    console.error('Error al obtener los documentos del usuario con etiquetas:', err);
-    res.status(500).send('Error en el servidor');
-  }
-});
-
 // Agregar un nuevo documento
 router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
   const { contenido_original, usuario_id, titulo, contenido_procesado } = req.body;
@@ -146,6 +130,7 @@ router.put('/:id', verificarRol(['admin', 'user']), async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 
