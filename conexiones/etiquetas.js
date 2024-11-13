@@ -95,6 +95,40 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Ruta en Node.js para asociar una etiqueta a un documento
+router.put('/documentos/:id/etiqueta', async (req, res) => {
+  const { id } = req.params; // id del documento
+  const { etiqueta, color } = req.body;
+
+  try {
+    // Comprobamos si ya existe una entrada en etiquetas para este documento
+    const etiquetaExistente = await pool.query(
+      'SELECT * FROM etiquetas WHERE documento_id = $1',
+      [id]
+    );
+
+    if (etiquetaExistente.rowCount > 0) {
+      // Si existe, actualizamos la etiqueta y el color
+      await pool.query(
+        'UPDATE etiquetas SET nombre = $1, color = $2 WHERE documento_id = $3',
+        [etiqueta, color, id]
+      );
+    } else {
+      // Si no existe, insertamos una nueva fila en la tabla etiquetas
+      await pool.query(
+        'INSERT INTO etiquetas (nombre, color, documento_id) VALUES ($1, $2, $3)',
+        [etiqueta, color, id]
+      );
+    }
+
+    res.status(200).json({ message: 'Etiqueta asociada exitosamente al documento' });
+  } catch (error) {
+    console.error('Error al asociar la etiqueta al documento:', error);
+    res.status(500).json({ error: 'Error al asociar la etiqueta al documento' });
+  }
+});
+
+
 // Eliminar una etiqueta
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
