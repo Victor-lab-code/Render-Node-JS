@@ -33,7 +33,6 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', '
       [documentos.map((doc) => doc.id)]
     );
 
-    // Crear un mapa de etiquetas asociadas a los documentos
     const etiquetasMap = {};
     etiquetasResult.rows.forEach((etiqueta) => {
       etiquetasMap[etiqueta.documento_id] = {
@@ -56,6 +55,7 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', '
     res.status(500).send('Error en el servidor');
   }
 });
+
 
 
     // Agregar la etiqueta correspondiente a cada documento (si existe)
