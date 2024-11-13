@@ -29,7 +29,7 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', '
 
     // Obtener etiquetas asociadas a los documentos
     const etiquetasResult = await pool.query(
-      'SELECT documento_id, nombre AS etiqueta, color FROM etiquetas WHERE documento_id = ANY($1::int[])',
+      'SELECT documento_id, etiqueta AS etiqueta, color FROM etiquetas WHERE documento_id = ANY($1::int[])',
       [documentos.map((doc) => doc.id)]
     );
 
