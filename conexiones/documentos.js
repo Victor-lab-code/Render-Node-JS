@@ -18,22 +18,6 @@ router.get('/', verificarRol(['admin', 'viewer', 'manager']), async (req, res) =
   }
 });
 
-// Obtener documentos por usuario_id
-// router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
-//   const { usuario_id } = req.params;
-//   try {
-//     const result = await pool.query('SELECT * FROM documentos WHERE usuario_id = $1', [usuario_id]);
-//     const documentos = result.rows.map((documento) => ({
-//       ...documento,
-//       contenido_original: documento.contenido_original.toString('base64'),
-//     }));
-//     res.json(documentos);
-//   } catch (err) {
-//     console.error('Error al obtener los documentos del usuario:', err);
-//     res.status(500).send('Error en el servidor');
-  // }
-});
-
 // Obtener documentos por usuario_id con sus etiquetas
 router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
   const { usuario_id } = req.params;
@@ -70,7 +54,6 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', '
     res.status(500).send('Error en el servidor');
   }
 });
-
 
 // Agregar un nuevo documento
 router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
@@ -110,7 +93,6 @@ router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
   }
 });
 
-
 // Eliminar un documento
 router.delete('/:id', verificarRol(['admin', 'manager', 'user']), async (req, res) => {
   const { id } = req.params;
@@ -147,6 +129,7 @@ router.put('/:id', verificarRol(['admin', 'user']), async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 
