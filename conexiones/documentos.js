@@ -29,17 +29,34 @@ router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', '
 
     // Obtener etiquetas asociadas a los documentos
     const etiquetasResult = await pool.query(
-      'SELECT documento_id, etiqueta AS etiqueta, color FROM etiquetas WHERE documento_id = ANY($1::int[])',
+      'SELECT documento_id, etiqueta AS nombre, color FROM etiquetas WHERE documento_id = ANY($1::int[])',
       [documentos.map((doc) => doc.id)]
     );
 
+    // Crear un mapa de etiquetas asociadas a los documentos
     const etiquetasMap = {};
     etiquetasResult.rows.forEach((etiqueta) => {
       etiquetasMap[etiqueta.documento_id] = {
-        nombre: etiqueta.etiqueta,
+        nombre: etiqueta.nombre,
         color: etiqueta.color,
       };
     });
+
+    // Agregar la etiqueta y color correspondiente a cada documento (si existe)
+    const documentosConEtiquetas = documentos.map((documento) => ({
+      ...documento,
+      contenido_original: documento.contenido_original.toString('base64'),
+      etiqueta: etiquetasMap[documento.id]?.nombre || null,
+      color: etiquetasMap[documento.id]?.color || null,
+    }));
+
+    res.json(documentosConEtiquetas);
+  } catch (err) {
+    console.error('Error al obtener los documentos del usuario con etiquetas:', err);
+    res.status(500).send('Error en el servidor');
+  }
+});
+
 
     // Agregar la etiqueta correspondiente a cada documento (si existe)
     const documentosConEtiquetas = documentos.map((documento) => ({
