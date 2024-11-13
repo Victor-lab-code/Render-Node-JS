@@ -19,20 +19,58 @@ router.get('/', verificarRol(['admin', 'viewer', 'manager']), async (req, res) =
 });
 
 // Obtener documentos por usuario_id
+// router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
+//   const { usuario_id } = req.params;
+//   try {
+//     const result = await pool.query('SELECT * FROM documentos WHERE usuario_id = $1', [usuario_id]);
+//     const documentos = result.rows.map((documento) => ({
+//       ...documento,
+//       contenido_original: documento.contenido_original.toString('base64'),
+//     }));
+//     res.json(documentos);
+//   } catch (err) {
+//     console.error('Error al obtener los documentos del usuario:', err);
+//     res.status(500).send('Error en el servidor');
+  // }
+});
+
+// Obtener documentos por usuario_id con sus etiquetas
 router.get('/usuario/:usuario_id', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
   const { usuario_id } = req.params;
+
   try {
+    // Obtener documentos del usuario
     const result = await pool.query('SELECT * FROM documentos WHERE usuario_id = $1', [usuario_id]);
-    const documentos = result.rows.map((documento) => ({
+    const documentos = result.rows;
+
+    // Obtener etiquetas asociadas a los documentos
+    const etiquetasResult = await pool.query(
+      'SELECT documento_id, nombre AS etiqueta, color FROM etiquetas WHERE documento_id = ANY($1::int[])',
+      [documentos.map((doc) => doc.id)]
+    );
+
+    const etiquetasMap = {};
+    etiquetasResult.rows.forEach((etiqueta) => {
+      etiquetasMap[etiqueta.documento_id] = {
+        nombre: etiqueta.etiqueta,
+        color: etiqueta.color,
+      };
+    });
+
+    // Agregar la etiqueta correspondiente a cada documento (si existe)
+    const documentosConEtiquetas = documentos.map((documento) => ({
       ...documento,
       contenido_original: documento.contenido_original.toString('base64'),
+      etiqueta: etiquetasMap[documento.id] || null, // Agrega la etiqueta o null si no existe
     }));
-    res.json(documentos);
+
+    res.json(documentosConEtiquetas);
   } catch (err) {
-    console.error('Error al obtener los documentos del usuario:', err);
+    console.error('Error al obtener los documentos del usuario con etiquetas:', err);
     res.status(500).send('Error en el servidor');
   }
 });
+
 
 // Agregar un nuevo documento
 router.post('/', verificarRol(['admin', 'user']), async (req, res) => {
