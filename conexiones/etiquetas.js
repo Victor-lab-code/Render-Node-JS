@@ -144,4 +144,3 @@ router.delete('/:id', async (req, res) => {
 
 module.exports = router; // Exporta el router
 
-module.exports = router; // Exporta el router
