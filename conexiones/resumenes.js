@@ -15,7 +15,8 @@ async function obtenerResumen(texto) {
     const response = await axios.post(
       'https://api.cohere.ai/v1/summarize',
       {
-        text: `Genera un resumen en idioma español del siguiente texto (en español, no uses inglés): ${texto}`,
+        text: `Por favor, genera un resumen en español exclusivamente del siguiente texto, el cual también está en español. Asegúrate de no utilizar inglés u otro idioma:\n\n${texto}`,
+       // text: `Genera un resumen en idioma español del siguiente texto (en español, no uses inglés): ${texto}`,
         length: "medium" // Cambia a "short", "medium" o "long" según lo que necesites
       },
       {
