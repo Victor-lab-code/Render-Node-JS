@@ -31,6 +31,24 @@ router.delete('/:id', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
+router.get('/:id', verificarRol(['admin', 'user']), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query('SELECT nombre, correo FROM usuarios WHERE id = $1', [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al obtener datos del usuario:', err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+
 
 // Registrar un usuario
 router.post('/register', async (req, res) => {
