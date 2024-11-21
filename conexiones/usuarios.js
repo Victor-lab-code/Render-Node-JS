@@ -31,7 +31,9 @@ router.delete('/:id', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
-router.get('/:id', verificarRol(['admin', 'user']), async (req, res) => {
+
+//Obtener datos especificos del usuario
+router.get('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
