@@ -8,8 +8,8 @@ require('dotenv').config();
 console.log(process.env.DATABASE_URL);  
 
 // Configurar el límite de tamaño de las solicitudes
-app.use(express.json({ limit: '50mb' })); // 50MB como ejemplo
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '100mb' })); // 50MB como ejemplo
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // Configurar CORS
 app.use(cors());
