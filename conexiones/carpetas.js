@@ -139,6 +139,27 @@ router.get('/carpetas/nombres', async (req, res) => {
   }
 });
 
+router.get('/nombres', async (req, res) => {
+  const { usuario_id } = req.query;
+
+  if (!usuario_id) {
+    return res.status(400).json({ error: 'El ID del usuario es obligatorio.' });
+  }
+
+  try {
+    const carpetas = await pool.query(
+      'SELECT id, nombre FROM carpetas WHERE usuario_id = $1',
+      [usuario_id]
+    );
+
+    res.json(carpetas.rows);
+  } catch (error) {
+    console.error('Error al obtener nombres de carpetas:', error);
+    res.status(500).json({ error: 'Error al obtener nombres de carpetas.' });
+  }
+});
+
+
 
 
 
