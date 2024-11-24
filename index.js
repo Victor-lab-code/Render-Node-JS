@@ -25,6 +25,7 @@ app.get('/hello', (req, res) => {
 
 // Rutas de tu aplicación
 const usuariosRoutes = require('./conexiones/usuarios');
+const carpetasRoutes = require('./conexiones/carpetas');
 const rolesRoutes = require('./conexiones/roles');
 const documentosRoutes = require('./conexiones/documentos');
 const procesosOcrRoutes = require('./conexiones/procesos_ocr');
@@ -46,6 +47,8 @@ app.use('/logs', logsRoutes);
 app.use('/comentarios_documentos', comentariosRoutes);
 app.use('/permisos_tablas', permisosRoutes);
 app.use('/', authRoutes); // Ruta para autenticación
+app.use('/carpetas', carpetasRoutes);
+
 
 
 // Iniciar el servidor
