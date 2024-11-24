@@ -159,6 +159,52 @@ router.get('/nombres', async (req, res) => {
   }
 });
 
+// Mover un documento a una carpeta
+router.post('/mover', async (req, res) => {
+  const { documento_id, carpeta_id } = req.body;
+
+  if (!documento_id || !carpeta_id) {
+    return res.status(400).json({ error: 'documento_id y carpeta_id son requeridos.' });
+  }
+
+  try {
+    // Verificar si la carpeta existe
+    const carpeta = await pool.query('SELECT * FROM carpetas WHERE id = $1', [carpeta_id]);
+    if (carpeta.rowCount === 0) {
+      return res.status(404).json({ error: 'La carpeta no existe.' });
+    }
+
+    // Verificar si el documento existe
+    const documento = await pool.query('SELECT * FROM documentos WHERE id = $1', [documento_id]);
+    if (documento.rowCount === 0) {
+      return res.status(404).json({ error: 'El documento no existe.' });
+    }
+
+    // Verificar si el documento ya está en la carpeta
+    const relacionExistente = await pool.query(
+      'SELECT * FROM documentos_carpetas WHERE documento_id = $1 AND carpeta_id = $2',
+      [documento_id, carpeta_id]
+    );
+    if (relacionExistente.rowCount > 0) {
+      return res.status(400).json({ error: 'El documento ya está en la carpeta seleccionada.' });
+    }
+
+    // Eliminar relaciones existentes del documento con otras carpetas
+    await pool.query('DELETE FROM documentos_carpetas WHERE documento_id = $1', [documento_id]);
+
+    // Insertar la nueva relación
+    await pool.query(
+      'INSERT INTO documentos_carpetas (documento_id, carpeta_id) VALUES ($1, $2)',
+      [documento_id, carpeta_id]
+    );
+
+    res.status(200).json({ mensaje: 'Documento movido exitosamente.' });
+  } catch (error) {
+    console.error('Error al mover documento:', error);
+    res.status(500).json({ error: 'Error al mover el documento.' });
+  }
+});
+
 
 
 
