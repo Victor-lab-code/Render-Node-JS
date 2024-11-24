@@ -194,6 +194,40 @@ router.post('/mover', async (req, res) => {
   }
 });
 
+// Obtener documentos de una carpeta específica
+router.get('/:id/documentos', async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({ error: 'El ID de la carpeta es obligatorio.' });
+  }
+
+  try {
+    // Verificar si la carpeta existe
+    const carpeta = await pool.query('SELECT * FROM carpetas WHERE id = $1', [id]);
+    if (carpeta.rowCount === 0) {
+      return res.status(404).json({ error: 'La carpeta no existe.' });
+    }
+
+    // Obtener los documentos asociados a la carpeta
+    const documentos = await pool.query(`
+      SELECT d.id, d.titulo, d.contenido_original
+      FROM documentos_carpetas dc
+      INNER JOIN documentos d ON dc.documento_id = d.id
+      WHERE dc.carpeta_id = $1
+    `, [id]);
+
+    res.json({
+      carpeta: carpeta.rows[0],
+      documentos: documentos.rows,
+    });
+  } catch (error) {
+    console.error('Error al obtener documentos de la carpeta:', error);
+    res.status(500).json({ error: 'Error al obtener documentos de la carpeta.' });
+  }
+});
+
+
 
 
 
