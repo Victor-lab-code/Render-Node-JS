@@ -134,10 +134,11 @@ router.get('/carpetas/nombres', async (req, res) => {
 
     res.json(carpetas.rows);
   } catch (error) {
-    console.error('Error al obtener carpetas:', error);
-    res.status(500).json({ error: 'Error al obtener carpetas.' });
+    console.error('Error al obtener nombres de carpetas:', error);
+    res.status(500).json({ error: 'Error al obtener nombres de carpetas.' });
   }
 });
+
 
 
 
