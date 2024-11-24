@@ -61,4 +61,62 @@ router.post('/asignar-documento', async (req, res) => {
   }
 });
 
+// Obtener documentos organizados por carpetas
+router.get('/documentos', async (req, res) => {
+  const { usuario_id } = req.query;
+
+  // Validar que se envíe el usuario_id
+  if (!usuario_id) {
+    return res.status(400).json({ error: 'usuario_id es requerido' });
+  }
+
+  try {
+    // Obtener todas las carpetas del usuario
+    const carpetas = await pool.query(
+      'SELECT * FROM carpetas WHERE usuario_id = $1',
+      [usuario_id]
+    );
+
+    // Obtener documentos que están en carpetas
+    const documentosEnCarpetas = await pool.query(`
+      SELECT dc.carpeta_id, d.*
+      FROM documentos_carpetas dc
+      INNER JOIN documentos d ON dc.documento_id = d.id
+      WHERE d.usuario_id = $1
+    `, [usuario_id]);
+
+    // Mapear documentos a sus respectivas carpetas
+    const carpetasConDocumentos = carpetas.rows.map((carpeta) => {
+      return {
+        id: carpeta.id,
+        nombre: carpeta.nombre,
+        documentos: documentosEnCarpetas.rows.filter(
+          (doc) => doc.carpeta_id === carpeta.id
+        ),
+      };
+    });
+
+    // Obtener documentos sin carpeta
+    const documentosSinCarpeta = await pool.query(`
+      SELECT *
+      FROM documentos
+      WHERE usuario_id = $1
+      AND id NOT IN (SELECT documento_id FROM documentos_carpetas)
+    `, [usuario_id]);
+
+    // Agregar los documentos sin carpeta como una categoría especial
+    carpetasConDocumentos.push({
+      id: null,
+      nombre: 'Sin carpeta',
+      documentos: documentosSinCarpeta.rows,
+    });
+
+    res.json(carpetasConDocumentos);
+  } catch (error) {
+    console.error('Error al obtener documentos organizados:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+
 module.exports = router;
