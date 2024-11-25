@@ -235,42 +235,6 @@ router.get('/:id/documentos', async (req, res) => {
   }
 });
 
-// Obtener documentos de una carpeta específica con sus etiquetas
-router.get('/:carpeta_id/documentos',  async (req, res) => {
-  const { carpeta_id } = req.params;
-
-  try {
-    // Verificar que la carpeta existe
-    const carpetaResult = await pool.query('SELECT * FROM carpetas WHERE id = $1', [carpeta_id]);
-    if (carpetaResult.rowCount === 0) {
-      return res.status(404).json({ error: 'La carpeta no existe.' });
-    }
-
-    // Obtener documentos de la carpeta junto con etiquetas
-    const documentosResult = await pool.query(
-      `
-      SELECT 
-        d.id AS documento_id, 
-        d.titulo, 
-        d.fecha_subida, 
-        encode(d.contenido_original, 'base64') AS contenido_original,
-        e.etiqueta, 
-        e.color AS etiqueta_color
-      FROM documentos_carpetas dc
-      INNER JOIN documentos d ON dc.documento_id = d.id
-      LEFT JOIN etiquetas e ON e.documento_id = d.id
-      WHERE dc.carpeta_id = $1
-      `,
-      [carpeta_id]
-    );
-
-    // Devolver documentos con todos los datos necesarios
-    res.json(documentosResult.rows);
-  } catch (err) {
-    console.error('Error al obtener documentos de la carpeta:', err);
-    res.status(500).json({ error: 'Error al obtener documentos de la carpeta.' });
-  }
-});
 
 
 
