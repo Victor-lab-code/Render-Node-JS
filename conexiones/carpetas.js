@@ -235,6 +235,66 @@ router.get('/:id/documentos', async (req, res) => {
   }
 });
 
+// Obtener documentos de una carpeta específica con sus etiquetas
+router.get('/:carpeta_id/documentos', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
+  const { carpeta_id } = req.params;
+
+  try {
+    // Verificar que la carpeta existe
+    const carpetaResult = await pool.query('SELECT * FROM carpetas WHERE id = $1', [carpeta_id]);
+    if (carpetaResult.rowCount === 0) {
+      return res.status(404).json({ error: 'La carpeta no existe.' });
+    }
+
+    // Obtener documentos de la carpeta
+    const documentosResult = await pool.query(
+      `
+      SELECT d.*
+      FROM documentos_carpetas dc
+      INNER JOIN documentos d ON dc.documento_id = d.id
+      WHERE dc.carpeta_id = $1
+      `,
+      [carpeta_id]
+    );
+    const documentos = documentosResult.rows;
+
+    if (documentos.length === 0) {
+      return res.json([]); // Devuelve una lista vacía si no hay documentos
+    }
+
+    // Obtener etiquetas asociadas a los documentos
+    const etiquetasResult = await pool.query(
+      `
+      SELECT documento_id, etiqueta AS nombre, color
+      FROM etiquetas
+      WHERE documento_id = ANY($1::int[])
+      `,
+      [documentos.map((doc) => doc.id)]
+    );
+
+    const etiquetasMap = {};
+    etiquetasResult.rows.forEach((etiqueta) => {
+      etiquetasMap[etiqueta.documento_id] = {
+        nombre: etiqueta.nombre,
+        color: etiqueta.color,
+      };
+    });
+
+    // Agregar la etiqueta y color correspondiente a cada documento (si existe)
+    const documentosConEtiquetas = documentos.map((documento) => ({
+      ...documento,
+      contenido_original: documento.contenido_original.toString('base64'), // Convertir a Base64
+      etiqueta: etiquetasMap[documento.id]?.nombre || null,
+      color: etiquetasMap[documento.id]?.color || null,
+    }));
+
+    res.json(documentosConEtiquetas);
+  } catch (err) {
+    console.error('Error al obtener los documentos de la carpeta con etiquetas:', err);
+    res.status(500).send('Error en el servidor');
+  }
+});
+
 
 
 
