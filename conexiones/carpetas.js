@@ -195,43 +195,56 @@ router.post('/mover', async (req, res) => {
 });
 
 // Obtener documentos de una carpeta específica
-router.get('/:id/documentos', async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    return res.status(400).json({ error: 'El ID de la carpeta es obligatorio.' });
-  }
+router.get('/:carpeta_id/documentos', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
+  const { carpeta_id } = req.params;
 
   try {
     // Verificar si la carpeta existe
-    const carpeta = await pool.query('SELECT * FROM carpetas WHERE id = $1', [id]);
-    if (carpeta.rowCount === 0) {
+    const carpetaResult = await pool.query('SELECT * FROM carpetas WHERE id = $1', [carpeta_id]);
+    if (carpetaResult.rowCount === 0) {
       return res.status(404).json({ error: 'La carpeta no existe.' });
     }
 
-    // Obtener los documentos asociados a la carpeta con etiqueta y color
-    const documentos = await pool.query(`
-      SELECT 
-        d.id, 
-        d.titulo, 
-        d.fecha_subida, 
-        encode(d.contenido_original, 'base64') AS contenido_original,
-        e.nombre AS etiqueta, 
-        e.color
-      FROM documentos_carpetas dc
-      INNER JOIN documentos d ON dc.documento_id = d.id
-      LEFT JOIN etiquetas e ON d.etiqueta_id = e.id -- Asegúrate de tener esta relación configurada en tu base de datos
-      WHERE dc.carpeta_id = $1
-    `, [id]);
+    // Obtener los documentos asociados a la carpeta
+    const documentosResult = await pool.query(
+      `SELECT d.*
+       FROM documentos_carpetas dc
+       INNER JOIN documentos d ON dc.documento_id = d.id
+       WHERE dc.carpeta_id = $1`,
+      [carpeta_id]
+    );
+    const documentos = documentosResult.rows;
 
-    // Responder con la carpeta y sus documentos
-    res.json({
-      carpeta: carpeta.rows[0],
-      documentos: documentos.rows,
+    // Obtener etiquetas asociadas a los documentos en esta carpeta
+    const etiquetasResult = await pool.query(
+      'SELECT documento_id, etiqueta AS nombre, color FROM etiquetas WHERE documento_id = ANY($1::int[])',
+      [documentos.map((doc) => doc.id)]
+    );
+
+    const etiquetasMap = {};
+    etiquetasResult.rows.forEach((etiqueta) => {
+      etiquetasMap[etiqueta.documento_id] = {
+        nombre: etiqueta.nombre,
+        color: etiqueta.color,
+      };
     });
-  } catch (error) {
-    console.error('Error al obtener documentos de la carpeta:', error);
-    res.status(500).json({ error: 'Error al obtener documentos de la carpeta.' });
+
+    // Agregar la etiqueta y color correspondiente a cada documento (si existe)
+    const documentosConEtiquetas = documentos.map((documento) => ({
+      ...documento,
+      contenido_original: documento.contenido_original.toString('base64'),
+      etiqueta: etiquetasMap[documento.id]?.nombre || null,
+      color: etiquetasMap[documento.id]?.color || null,
+    }));
+
+    // Responder con los documentos procesados
+    res.json({
+      carpeta: carpetaResult.rows[0],
+      documentos: documentosConEtiquetas,
+    });
+  } catch (err) {
+    console.error('Error al obtener los documentos de la carpeta con etiquetas:', err);
+    res.status(500).send('Error en el servidor');
   }
 });
 
