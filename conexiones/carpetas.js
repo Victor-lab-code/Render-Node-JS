@@ -195,7 +195,7 @@ router.post('/mover', async (req, res) => {
 });
 
 // Obtener documentos de una carpeta específica
-router.get('/:carpeta_id/documentos', verificarRol(['admin', 'viewer', 'manager', 'user']), async (req, res) => {
+router.get('/:carpeta_id/documentos',  async (req, res) => {
   const { carpeta_id } = req.params;
 
   try {
