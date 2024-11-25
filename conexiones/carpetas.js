@@ -236,7 +236,7 @@ router.get('/:id/documentos', async (req, res) => {
 });
 
 // Obtener documentos de una carpeta específica con sus etiquetas
-router.get('/:carpeta_id/documentos', sync (req, res) => {
+router.get('/:carpeta_id/documentos', async (req, res) => {
   const { carpeta_id } = req.params;
 
   try {
