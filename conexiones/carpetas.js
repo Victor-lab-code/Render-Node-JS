@@ -209,14 +209,22 @@ router.get('/:id/documentos', async (req, res) => {
       return res.status(404).json({ error: 'La carpeta no existe.' });
     }
 
-    // Obtener los documentos asociados a la carpeta
+    // Obtener los documentos asociados a la carpeta con etiqueta y color
     const documentos = await pool.query(`
-      SELECT d.id, d.titulo, d.contenido_original
+      SELECT 
+        d.id, 
+        d.titulo, 
+        d.fecha_subida, 
+        encode(d.contenido_original, 'base64') AS contenido_original,
+        e.nombre AS etiqueta, 
+        e.color
       FROM documentos_carpetas dc
       INNER JOIN documentos d ON dc.documento_id = d.id
+      LEFT JOIN etiquetas e ON d.etiqueta_id = e.id -- Asegúrate de tener esta relación configurada en tu base de datos
       WHERE dc.carpeta_id = $1
     `, [id]);
 
+    // Responder con la carpeta y sus documentos
     res.json({
       carpeta: carpeta.rows[0],
       documentos: documentos.rows,
@@ -226,6 +234,7 @@ router.get('/:id/documentos', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener documentos de la carpeta.' });
   }
 });
+
 
 
 
