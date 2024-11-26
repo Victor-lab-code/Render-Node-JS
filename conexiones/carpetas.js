@@ -250,10 +250,59 @@ router.get('/:carpeta_id/documentos',  async (req, res) => {
 
 
 
+// Eliminar una carpeta por ID
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Verificar si la carpeta existe
+    const carpeta = await pool.query('SELECT * FROM carpetas WHERE id = $1', [id]);
+    if (carpeta.rowCount === 0) {
+      return res.status(404).json({ error: 'La carpeta no existe.' });
+    }
+
+    // Eliminar los documentos asociados a la carpeta
+    await pool.query('DELETE FROM documentos_carpetas WHERE carpeta_id = $1', [id]);
+
+    // Eliminar la carpeta
+    await pool.query('DELETE FROM carpetas WHERE id = $1', [id]);
+
+    res.status(200).json({ mensaje: 'Carpeta eliminada correctamente.' });
+  } catch (error) {
+    console.error('Error al eliminar la carpeta:', error);
+    res.status(500).json({ error: 'Error al eliminar la carpeta.' });
+  }
+});
 
 
 
 
+
+// Actualizar el nombre de una carpeta
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nuevoNombre } = req.body;
+
+  if (!nuevoNombre) {
+    return res.status(400).json({ error: 'El nuevo nombre de la carpeta es obligatorio.' });
+  }
+
+  try {
+    // Verificar si la carpeta existe
+    const carpeta = await pool.query('SELECT * FROM carpetas WHERE id = $1', [id]);
+    if (carpeta.rowCount === 0) {
+      return res.status(404).json({ error: 'La carpeta no existe.' });
+    }
+
+    // Actualizar el nombre de la carpeta
+    await pool.query('UPDATE carpetas SET nombre = $1 WHERE id = $2', [nuevoNombre, id]);
+
+    res.status(200).json({ mensaje: 'Carpeta actualizada correctamente.' });
+  } catch (error) {
+    console.error('Error al actualizar el nombre de la carpeta:', error);
+    res.status(500).json({ error: 'Error al actualizar el nombre de la carpeta.' });
+  }
+});
 
 
 
