@@ -305,6 +305,22 @@ router.put('/:id', async (req, res) => {
 });
 
 
+router.post('/remover-documento', async (req, res) => {
+  const { carpeta_id, documento_id } = req.body;
+
+  try {
+    await pool.query(
+      'DELETE FROM documentos_carpetas WHERE carpeta_id = $1 AND documento_id = $2',
+      [carpeta_id, documento_id]
+    );
+
+    res.status(200).json({ message: 'Documento eliminado de la carpeta' });
+  } catch (error) {
+    console.error('Error al remover documento de la carpeta:', error);
+    res.status(500).json({ error: 'Error al remover documento de la carpeta.' });
+  }
+});
+
 
 
 module.exports = router;
