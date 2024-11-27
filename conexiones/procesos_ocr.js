@@ -29,7 +29,7 @@ async function truncarTextoPorTokens(texto, maxTokens) {
 
     // Si excede el máximo permitido, truncar
     if (tokens.length > maxTokens) {
-      const textoTruncado = tokens.slice(0, maxTokens).join(' ') + '...';
+      const textoTruncado = texto.split(' ').slice(0, maxTokens).join(' ') + '...';
       console.log(`Texto truncado a ${maxTokens} tokens`);
       return textoTruncado;
     }
@@ -52,9 +52,14 @@ router.post('/chatbot', async (req, res) => {
   }
 
   try {
-    // Truncar el texto a un máximo de tokens permitido por el modelo
-    const maxPromptTokens = 3000; // Dejar espacio para la pregunta y la respuesta
-    const textoTruncado = await truncarTextoPorTokens(textoDocumento, maxPromptTokens);
+    // Configuración de límites de tokens
+    const maxTotalTokens = 4081; // Límite total de tokens
+    const reservedTokens = 550; // Tokens reservados para pregunta y respuesta
+    const maxTextoTokens = maxTotalTokens - reservedTokens;
+
+    // Truncar el texto
+    const textoTruncado = await truncarTextoPorTokens(textoDocumento, maxTextoTokens);
+    console.log('Texto truncado enviado como contexto:', textoTruncado);
 
     // Construir el prompt
     const prompt = `
@@ -97,6 +102,7 @@ Por favor, responde de manera clara y concisa basándote únicamente en el texto
     });
   }
 });
+
 
 
 
