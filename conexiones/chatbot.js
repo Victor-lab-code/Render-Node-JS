@@ -6,7 +6,8 @@ const COHERE_API_KEY = '8Dj2lrUnIY8bqQ7WrGVgjJ7gsIOISN7jiNctpDFi';
 const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
 
 // Endpoint para procesar preguntas del chatbot
-router.post('/chatbot', async (req, res) => {
+router.post('/', async (req, res) => {
+
   const { textoDocumento, pregunta } = req.body;
 
   // Log para diagnosticar los datos que llegan al servidor
