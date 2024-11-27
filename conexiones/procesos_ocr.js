@@ -17,19 +17,30 @@ router.post('/chatbot', async (req, res) => {
 
   console.log('Datos recibidos en /chatbot:', { textoDocumento, pregunta });
 
-  // Validación de entrada
   if (!textoDocumento || !pregunta) {
     return res.status(400).json({ error: 'Texto del documento y pregunta son requeridos' });
   }
 
   try {
-    // Preparar el cuerpo para el endpoint Chat
+    // Truncar texto si es demasiado largo
+    const truncarTexto = (texto, maxTokens = 500) => {
+      const palabras = texto.split(' ');
+      if (palabras.length > maxTokens) {
+        return palabras.slice(0, maxTokens).join(' ') + '...';
+      }
+      return texto;
+    };
+
+    const textoTruncado = truncarTexto(textoDocumento);
+
+    // Registrar texto truncado para depuración
+    console.log('Texto truncado enviado como contexto:', textoTruncado);
+
     const response = await axios.post(
       'https://api.cohere.ai/v1/chat',
       {
         query: pregunta,
-        context: textoDocumento, // El texto en el que se basará la respuesta
-        examples: [], // Opcional: puedes incluir ejemplos para guiar el modelo
+        context: `Por favor, responde basándote en este texto:\n\n${textoTruncado}`,
         max_tokens: 300,
         temperature: 0.7,
       },
@@ -41,20 +52,19 @@ router.post('/chatbot', async (req, res) => {
       }
     );
 
-    // Procesar la respuesta del modelo
     const respuesta = response.data.text?.trim();
-    console.log('Respuesta de Cohere (Chat):', respuesta);
+    console.log('Respuesta de Cohere:', respuesta);
 
     res.status(200).json({ respuesta });
   } catch (error) {
     console.error('Error al comunicarse con Cohere:', error.response?.data || error.message);
-
     res.status(500).json({
       error: 'Error al obtener respuesta del chatbot',
       detalles: error.response?.data || error.message,
     });
   }
 });
+
 
 
 
