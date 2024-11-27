@@ -9,6 +9,7 @@ const COHERE_API_KEY = process.env.COHERE_API_KEY; // Usar variable de entorno
 const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
 
 // Endpoint para procesar preguntas del chatbot
+// Endpoint para procesar preguntas del chatbot
 router.post('/chatbot', async (req, res) => {
   const { textoDocumento, pregunta } = req.body;
 
@@ -20,6 +21,7 @@ router.post('/chatbot', async (req, res) => {
   }
 
   try {
+    // Construir el prompt con el texto y la pregunta
     const prompt = `
 Texto del documento:
 ${textoDocumento}
@@ -34,35 +36,37 @@ Respuesta basada en el texto:
 
     // Llamada a la API de Cohere
     const response = await axios.post(
-      COHERE_GENERATE_URL,
+      'https://api.cohere.ai/v1/generate',
       {
-        model: 'xlarge',
+        model: 'xlarge', // Cambia si tienes un modelo diferente
         prompt: prompt,
         max_tokens: 150,
         temperature: 0.7,
-        stop_sequences: ['\n'],
+        stop_sequences: ['\n'], // Opcional, para detener la generación en un salto de línea
       },
       {
         headers: {
-          Authorization: `Bearer ${COHERE_API_KEY}`,
+          Authorization: `Bearer ${COHERE_API_KEY}`, // Usar la clave de la variable de entorno
           'Content-Type': 'application/json',
         },
       }
     );
 
-    // Procesar la respuesta de Cohere
+    // Procesar la respuesta y enviar el resultado
     const respuesta = response.data.generations[0]?.text.trim();
     console.log('Respuesta de Cohere:', respuesta);
 
-    res.json({ respuesta });
+    res.status(200).json({ respuesta });
   } catch (error) {
-    console.error('Error al comunicarse con Cohere:', error.message);
+    console.error('Error al comunicarse con Cohere:', error.response?.data || error.message);
+
     res.status(500).json({
       error: 'Error al obtener respuesta del chatbot',
-      detalles: error.message,
+      detalles: error.response?.data || error.message,
     });
   }
 });
+
 
 
 // Ruta para guardar el resultado OCR
