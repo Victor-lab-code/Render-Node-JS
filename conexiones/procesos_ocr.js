@@ -11,6 +11,7 @@ const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
 
 // Endpoint para procesar preguntas del chatbot
 // Endpoint para procesar preguntas del chatbot
+// Endpoint para procesar preguntas del chatbot
 router.post('/chatbot', async (req, res) => {
   const { textoDocumento, pregunta } = req.body;
 
@@ -22,40 +23,27 @@ router.post('/chatbot', async (req, res) => {
   }
 
   try {
-    // Construir el prompt con el texto y la pregunta
-    const prompt = `
-Texto del documento:
-${textoDocumento}
-
-Pregunta del usuario:
-${pregunta}
-
-Respuesta basada en el texto:
-`;
-
-    console.log('Prompt enviado a Cohere:', prompt);
-
-    // Llamada a la API de Cohere
+    // Preparar el cuerpo para el endpoint Chat
     const response = await axios.post(
-      'https://api.cohere.ai/v1/generate',
+      'https://api.cohere.ai/v1/chat',
       {
-        model: 'xlarge', // Cambia si tienes un modelo diferente
-        prompt: prompt,
-        max_tokens: 150,
+        query: pregunta,
+        context: textoDocumento, // El texto en el que se basará la respuesta
+        examples: [], // Opcional: puedes incluir ejemplos para guiar el modelo
+        max_tokens: 300,
         temperature: 0.7,
-        stop_sequences: ['\n'], // Opcional, para detener la generación en un salto de línea
       },
       {
         headers: {
-          Authorization: `Bearer ${COHERE_API_KEY}`, // Usar la clave de la variable de entorno
+          Authorization: `Bearer ${COHERE_API_KEY}`,
           'Content-Type': 'application/json',
         },
       }
     );
 
-    // Procesar la respuesta y enviar el resultado
-    const respuesta = response.data.generations[0]?.text.trim();
-    console.log('Respuesta de Cohere:', respuesta);
+    // Procesar la respuesta del modelo
+    const respuesta = response.data.text?.trim();
+    console.log('Respuesta de Cohere (Chat):', respuesta);
 
     res.status(200).json({ respuesta });
   } catch (error) {
