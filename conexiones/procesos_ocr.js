@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db'); // Asegúrate de tener configurada la conexión a la base de datos
 const axios = require('axios');
+const cohere = require('cohere-ai')
 
 
 const COHERE_API_KEY = process.env.COHERE_API_KEY; // Usar variable de entorno
