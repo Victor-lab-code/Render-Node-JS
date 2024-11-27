@@ -9,39 +9,6 @@ const cohere = require('cohere-ai')
 const COHERE_API_KEY = process.env.COHERE_API_KEY; // Usar variable de entorno
 const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
 
-// Endpoint para procesar preguntas del chatbot
-async function truncarTextoPorTokens(texto, maxTokens) {
-  try {
-    // Tokenizar el texto usando la API de Cohere
-    const response = await axios.post(
-      'https://api.cohere.ai/v1/tokenize',
-      { text: texto },
-      {
-        headers: {
-          Authorization: `Bearer ${COHERE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const tokens = response.data.tokens;
-    console.log(`Total de tokens generados: ${tokens.length}`);
-
-    // Si excede el máximo permitido, truncar
-    if (tokens.length > maxTokens) {
-      const textoTruncado = texto.split(' ').slice(0, maxTokens).join(' ') + '...';
-      console.log(`Texto truncado a ${maxTokens} tokens`);
-      return textoTruncado;
-    }
-
-    return texto; // Si no excede, devolver el texto original
-  } catch (error) {
-    console.error('Error al tokenizar el texto:', error.response?.data || error.message);
-    throw new Error('Error al tokenizar el texto');
-  }
-}
-
-// Endpoint para el chatbot
 router.post('/chatbot', async (req, res) => {
   const { textoDocumento, pregunta } = req.body;
 
@@ -52,19 +19,10 @@ router.post('/chatbot', async (req, res) => {
   }
 
   try {
-    // Configuración de límites de tokens
-    const maxTotalTokens = 4081; // Límite total de tokens
-    const reservedTokens = 550; // Tokens reservados para pregunta y respuesta
-    const maxTextoTokens = maxTotalTokens - reservedTokens;
-
-    // Truncar el texto
-    const textoTruncado = await truncarTextoPorTokens(textoDocumento, maxTextoTokens);
-    console.log('Texto truncado enviado como contexto:', textoTruncado);
-
-    // Construir el prompt
+    // Construir el prompt usando directamente el texto enviado desde Flutter
     const prompt = `
 Texto del documento:
-${textoTruncado}
+${textoDocumento}
 
 Pregunta del usuario:
 ${pregunta}
@@ -72,14 +30,15 @@ ${pregunta}
 Por favor, responde de manera clara y concisa basándote únicamente en el texto proporcionado.
 `;
 
-    console.log('Prompt final enviado a Cohere:', prompt);
+    console.log('Prompt enviado a Cohere:', prompt);
 
+    // Enviar el prompt a la API de Cohere
     const response = await axios.post(
       'https://api.cohere.ai/v1/generate',
       {
         model: 'command-medium-nightly', // Cambiar al modelo disponible
         prompt: prompt,
-        max_tokens: 500, // Tokens reservados para la respuesta
+        max_tokens: 500, // Reservar tokens para la respuesta generada
         temperature: 0.7,
       },
       {
@@ -102,6 +61,7 @@ Por favor, responde de manera clara y concisa basándote únicamente en el texto
     });
   }
 });
+
 
 
 
