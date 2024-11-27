@@ -58,4 +58,9 @@ Respuesta basada en el texto:
   }
 });
 
+router.get('/', (req, res) => {
+  res.send('Ruta /chatbot funcionando');
+});
+
+
 module.exports = router;
