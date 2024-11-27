@@ -7,6 +7,8 @@ const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
 
 // Endpoint para procesar preguntas del chatbot
 router.post('/', async (req, res) => {
+  console.log('Archivo chatbot.js cargado correctamente');
+
 
   const { textoDocumento, pregunta } = req.body;
 
