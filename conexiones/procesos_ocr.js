@@ -21,10 +21,10 @@ router.post('/chatbot', async (req, res) => {
   try {
     // Construir el prompt usando directamente el texto enviado desde Flutter
 const prompt = `
-El siguiente texto está en español:
+Te comparto este texto :
 ${textoDocumento}
 
-Por favor, responde la siguiente pregunta en español:
+Por favor, responde la siguiente pregunta :
 Pregunta: ${pregunta}
 
 Respuesta:
