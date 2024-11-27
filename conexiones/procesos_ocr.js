@@ -5,17 +5,16 @@ const pool = require('../db'); // Asegúrate de tener configurada la conexión a
 const axios = require('axios');
 
 
-const COHERE_API_KEY = process.env.COHERE_API_KEY; // Obtener la clave de la API desde el entorno
+const COHERE_API_KEY = process.env.COHERE_API_KEY; // Usar variable de entorno
 const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
 
+// Endpoint para procesar preguntas del chatbot
 router.post('/chatbot', async (req, res) => {
-  console.log('Chatbot endpoint en procesos_ocr.js funcionando correctamente');
-
   const { textoDocumento, pregunta } = req.body;
 
-  // Log para diagnosticar los datos que llegan al servidor
-  console.log('Datos recibidos en /procesos_ocr/chatbot:', { textoDocumento, pregunta });
+  console.log('Datos recibidos en /chatbot:', { textoDocumento, pregunta });
 
+  // Validación de entrada
   if (!textoDocumento || !pregunta) {
     return res.status(400).json({ error: 'Texto del documento y pregunta son requeridos' });
   }
@@ -31,12 +30,13 @@ ${pregunta}
 Respuesta basada en el texto:
 `;
 
-    console.log('Prompt enviado a Cohere:', prompt); // Log del prompt generado
+    console.log('Prompt enviado a Cohere:', prompt);
 
+    // Llamada a la API de Cohere
     const response = await axios.post(
       COHERE_GENERATE_URL,
       {
-        model: 'xlarge', // Cambia al modelo adecuado si "xlarge" no está disponible
+        model: 'xlarge',
         prompt: prompt,
         max_tokens: 150,
         temperature: 0.7,
@@ -44,20 +44,27 @@ Respuesta basada en el texto:
       },
       {
         headers: {
-          Authorization: `Bearer ${COHERE_API_KEY}`, // Usar la clave desde el entorno
+          Authorization: `Bearer ${COHERE_API_KEY}`,
           'Content-Type': 'application/json',
         },
       }
     );
 
+    // Procesar la respuesta de Cohere
     const respuesta = response.data.generations[0]?.text.trim();
-    console.log('Respuesta de Cohere:', respuesta); // Log de la respuesta recibida
+    console.log('Respuesta de Cohere:', respuesta);
+
     res.json({ respuesta });
   } catch (error) {
-    console.error('Error al comunicarse con Cohere:', error.message); // Log del error
-    res.status(500).json({ error: 'Error al obtener respuesta del chatbot' });
+    console.error('Error al comunicarse con Cohere:', error.message);
+    res.status(500).json({
+      error: 'Error al obtener respuesta del chatbot',
+      detalles: error.message,
+    });
   }
 });
+
+
 // Ruta para guardar el resultado OCR
 router.post('/guardar-ocr', async (req, res) => {
   const { documento_id, resultado_ocr } = req.body;
