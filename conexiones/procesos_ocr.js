@@ -22,10 +22,14 @@ router.post('/chatbot', async (req, res) => {
   }
 
   try {
+    // Truncar texto para mantenernos dentro del límite de tokens
+    const textoTruncado = truncarTexto(textoDocumento, 800); // Limitar a 800 palabras
+    console.log('Texto truncado enviado como contexto:', textoTruncado);
+
     // Construir el prompt dinámicamente con texto y pregunta
     const prompt = `
 Texto del documento:
-${textoDocumento}
+${textoTruncado}
 
 Pregunta del usuario:
 ${pregunta}
@@ -36,9 +40,9 @@ Por favor, responde de manera clara y concisa basándote únicamente en el texto
     console.log('Prompt enviado a Cohere:', prompt);
 
     const response = await axios.post(
-      'https://api.cohere.ai/v1/generate', // Usamos /generate porque /chat requiere datos estructurados
+      'https://api.cohere.ai/v1/generate',
       {
-        model: 'command-medium-nightly', // Cambia a un modelo válido en tu cuenta
+        model: 'command-medium-nightly', // Cambia según tu cuenta
         prompt: prompt,
         max_tokens: 300,
         temperature: 0.7,
@@ -64,6 +68,7 @@ Por favor, responde de manera clara y concisa basándote únicamente en el texto
     });
   }
 });
+
 
 
 
