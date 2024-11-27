@@ -2,7 +2,62 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db'); // Asegúrate de tener configurada la conexión a la base de datos
+const axios = require('axios');
 
+
+const COHERE_API_KEY = process.env.COHERE_API_KEY; // Obtener la clave de la API desde el entorno
+const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
+
+router.post('/chatbot', async (req, res) => {
+  console.log('Chatbot endpoint en procesos_ocr.js funcionando correctamente');
+
+  const { textoDocumento, pregunta } = req.body;
+
+  // Log para diagnosticar los datos que llegan al servidor
+  console.log('Datos recibidos en /procesos_ocr/chatbot:', { textoDocumento, pregunta });
+
+  if (!textoDocumento || !pregunta) {
+    return res.status(400).json({ error: 'Texto del documento y pregunta son requeridos' });
+  }
+
+  try {
+    const prompt = `
+Texto del documento:
+${textoDocumento}
+
+Pregunta del usuario:
+${pregunta}
+
+Respuesta basada en el texto:
+`;
+
+    console.log('Prompt enviado a Cohere:', prompt); // Log del prompt generado
+
+    const response = await axios.post(
+      COHERE_GENERATE_URL,
+      {
+        model: 'xlarge', // Cambia al modelo adecuado si "xlarge" no está disponible
+        prompt: prompt,
+        max_tokens: 150,
+        temperature: 0.7,
+        stop_sequences: ['\n'],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${COHERE_API_KEY}`, // Usar la clave desde el entorno
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const respuesta = response.data.generations[0]?.text.trim();
+    console.log('Respuesta de Cohere:', respuesta); // Log de la respuesta recibida
+    res.json({ respuesta });
+  } catch (error) {
+    console.error('Error al comunicarse con Cohere:', error.message); // Log del error
+    res.status(500).json({ error: 'Error al obtener respuesta del chatbot' });
+  }
+});
 // Ruta para guardar el resultado OCR
 router.post('/guardar-ocr', async (req, res) => {
   const { documento_id, resultado_ocr } = req.body;
