@@ -20,14 +20,14 @@ router.post('/chatbot', async (req, res) => {
 
   try {
     // Construir el prompt usando directamente el texto enviado desde Flutter
-    const prompt = `
-Texto del documento:
+const prompt = `
+El siguiente texto está en español:
 ${textoDocumento}
 
-Pregunta del usuario:
-${pregunta}
+Por favor, responde la siguiente pregunta en español:
+Pregunta: ${pregunta}
 
-Por favor, responde de manera clara y concisa basándote únicamente en el texto proporcionado.
+Respuesta:
 `;
 
     console.log('Prompt enviado a Cohere:', prompt);
