@@ -35,6 +35,7 @@ const logsRoutes = require('./conexiones/logs');
 const comentariosRoutes = require('./conexiones/comentarios_documentos');
 const permisosRoutes = require('./conexiones/permisos_tablas');
 const authRoutes = require('./conexiones/auth'); // Cambia a auth.js o register.js si aplica
+const chatbot = require('./conexiones/chatbot'); // Cambia a auth.js o register.js si aplica
 
 // Usar las rutas de la API
 app.use('/usuarios', usuariosRoutes);
@@ -48,6 +49,7 @@ app.use('/comentarios_documentos', comentariosRoutes);
 app.use('/permisos_tablas', permisosRoutes);
 app.use('/', authRoutes); // Ruta para autenticación
 app.use('/carpetas', carpetasRoutes);
+app.use('/chatbot', chatbot);
 
 
 
