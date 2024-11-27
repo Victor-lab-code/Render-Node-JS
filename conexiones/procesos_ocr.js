@@ -10,10 +10,6 @@ const COHERE_API_KEY = process.env.COHERE_API_KEY; // Usar variable de entorno
 const COHERE_GENERATE_URL = 'https://api.cohere.ai/v1/generate';
 
 // Endpoint para procesar preguntas del chatbot
-const axios = require('axios');
-
-const COHERE_API_KEY = process.env.COHERE_API_KEY;
-
 async function truncarTextoPorTokens(texto, maxTokens) {
   try {
     // Tokenizar el texto usando la API de Cohere
