@@ -148,5 +148,9 @@ router.get('/ver/:documento_id', async (req, res) => {
   }
 });
 
+router.get('/', (req, res) => {
+  res.send('Ruta /procesos_ocr funcionando correctamente');
+});
+
 
 module.exports = router;
